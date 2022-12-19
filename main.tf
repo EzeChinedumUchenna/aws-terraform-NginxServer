@@ -20,8 +20,10 @@ variable "cidr_block" {
 }
 
 variable "my-IP" {}
-
-
+variable "instance_type" {}
+variable "availability_zone" {}
+variable "publicKey-Location" {
+}
 
 resource "aws_vpc" "nedum_vpc" {
   cidr_block = var.cidr_block[0]
@@ -116,11 +118,64 @@ resource "aws_default_security_group" "my-default-SG" {
   }
 }
 
+// creating the EC2 instance
+
+data "aws_ami" "ubuntu-image" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-kernel-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+ owners = ["amazon"]
+}
+
+// To Generate and automate the SSH Key pair.
+resource "aws_key_pair" "SSH-Key" {
+  key_name = "server-key"  
+  public_key = "${file(var.publicKey-Location)}" // the instance will generate a public Key from your local machine public key. 
+}
+
+
+resource "aws_instance" "my-web-server" {
+  ami           = data.aws_ami.ubuntu-image.id
+  instance_type = var.instance_type
+
+  tags = {
+    Name = "${var.name}-EC2" 
+  }
+
+  subnet_id = aws_subnet.nedum_subnet.id  // Lunching this EC2 into our created subnet
+  vpc_security_group_ids = [aws_default_security_group.my-default-SG.id] // asssociating our created Security Group. please Note that SG is a list ([])of rules
+
+  associate_public_ip_address = true
+  
+  key_name = aws_key_pair.SSH-Key.key_name  // NOTE You can generate Key pair on Aws, download it to your machine. Then move the .pem to .ssh folder and SSH into the EC2 instance using "ssh ~/.ssh/my-Aws-LinuxEC2-KeyPairs.pem ec2-user@34.227.56.135"
+
+}
+
+
+
 output "vpc-name" {
   value = aws_vpc.nedum_vpc.tags.Name
  
 }
 
+output "public-IP" {
+  value = aws_instance.my-web-server.public_ip
+}
+
+output "private-IP" {
+  value = aws_instance.my-web-server.private_ip
+}
+
 output "vpc-id" {
   value = aws_vpc.nedum_vpc.id
 }
+
