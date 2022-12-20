@@ -103,8 +103,15 @@ resource "aws_default_security_group" "my-default-SG" {
     to_port          = 8080
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
-    
   }
+
+  # ingress {
+  #   from_port        = 80
+  #   to_port          = 80
+  #   protocol         = "tcp"
+  #   cidr_blocks      = ["0.0.0.0/0"]
+    
+  # }
 
   egress {
     from_port        = 0
@@ -146,7 +153,8 @@ resource "aws_key_pair" "SSH-Key" {
 resource "aws_instance" "my-web-server" {
   ami           = data.aws_ami.ubuntu-image.id
   instance_type = var.instance_type
-
+  user_data = file("script.sh")
+  // user_data_replace_on_change  = true
   tags = {
     Name = "${var.name}-EC2" 
   }
@@ -157,7 +165,15 @@ resource "aws_instance" "my-web-server" {
   associate_public_ip_address = true
   
   key_name = aws_key_pair.SSH-Key.key_name  // NOTE You can generate Key pair on Aws, download it to your machine. Then move the .pem to .ssh folder and SSH into the EC2 instance using "ssh ~/.ssh/my-Aws-LinuxEC2-KeyPairs.pem ec2-user@34.227.56.135"
-
+   
+ 
+  /*user_data = <<-EOF
+          sudo yum update -y && sudo yum install -y docker
+          sudo systemctl start docker
+          sudo usermod -aG docker ec2-user
+          docker run --name some-nginx -d -p 8080:80 nginx
+          EOF
+*/
 }
 
 
