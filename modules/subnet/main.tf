@@ -1,7 +1,7 @@
 resource "aws_subnet" "nedum_subnet" {
  vpc_id =  var.vpc_id
- cidr_block = var.cidr_block[1]
- availability_zone = "us-east-1a"
+ cidr_block = var.cidr_block
+ availability_zone = var.availability_zone
  tags = {
     "Name" = "${var.name}-subnet-1" 
   }

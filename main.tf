@@ -6,6 +6,15 @@ provider "aws" {
   # Configuration options
 }
 
+module "nginxServer-subnet" {
+  source = "./modules/subnet"  
+  vpc_id = aws_vpc.nedum_vpc.id
+  cidr_block = var.cidr_block[0]
+  name = var.name
+  availability_zone = var.availability_zone
+  default_route_table_id = aws_vpc.nedum_vpc.default_route_table_id
+}
+
 
 resource "aws_vpc" "nedum_vpc" {
   cidr_block = var.cidr_block[0]
@@ -89,7 +98,7 @@ resource "aws_instance" "my-web-server" {
     Name = "${var.name}-EC2" 
   }
 
-  subnet_id = aws_subnet.nedum_subnet.id  // Lunching this EC2 into our created subnet
+  subnet_id = module.nginxServer-subnet.subnet.id  // Lunching this EC2 into our created subnet
   vpc_security_group_ids = [aws_default_security_group.my-default-SG.id] // asssociating our created Security Group. please Note that SG is a list ([])of rules
 
   associate_public_ip_address = true
