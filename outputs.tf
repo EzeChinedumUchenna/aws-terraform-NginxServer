@@ -5,11 +5,11 @@ output "vpc-name" {
 }
 
 output "public-IP" {
-  value = aws_instance.my-web-server.public_ip
+  value = module.nginxServer.public_ip.public_ip
 }
 
 output "private-IP" {
-  value = aws_instance.my-web-server.private_ip
+  value = module.nginxServer.private_ip.private_ip
 }
 
 output "vpc-id" {
